@@ -28,12 +28,14 @@ import reactor.ipc.netty.Connection;
 import reactor.ipc.netty.ConnectionEvents;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 /**
  * @author Violeta Georgieva
  * @since 0.8
  */
-final class Http2ServerOperations extends Http2StreamOperations implements Http2FrameListener {
+public final class Http2ServerOperations extends Http2StreamOperations
+		implements Http2FrameListener, BiConsumer<Void, Throwable> {
 
 	@SuppressWarnings("unchecked")
 	static Http2ServerOperations bindHttp2(Connection connection, ConnectionEvents listener) {
@@ -43,7 +45,7 @@ final class Http2ServerOperations extends Http2StreamOperations implements Http2
 	final DirectProcessor<Http2StreamOutbound> streams = DirectProcessor.create();
 	final ConcurrentHashMap<Integer, Http2StreamOperations> streamsCache = new ConcurrentHashMap<>();
 
-	Http2ServerOperations(Connection c, ConnectionEvents listener) {
+	public Http2ServerOperations(Connection c, ConnectionEvents listener) {
 		super(c, listener, null, -1);
 		streamsCache.put(-1, this);
 	}
@@ -92,11 +94,11 @@ final class Http2ServerOperations extends Http2StreamOperations implements Http2
 	}
 
 	@Override
-	public void onPingRead(ChannelHandlerContext ctx, ByteBuf data) throws Http2Exception {
+	public void onPingRead(ChannelHandlerContext ctx, long data) throws Http2Exception {
 	}
 
 	@Override
-	public void onPingAckRead(ChannelHandlerContext ctx, ByteBuf data) throws Http2Exception {
+	public void onPingAckRead(ChannelHandlerContext ctx, long data) throws Http2Exception {
 	}
 
 	@Override
@@ -113,5 +115,17 @@ final class Http2ServerOperations extends Http2StreamOperations implements Http2
 
 	@Override
 	public void onUnknownFrame(ChannelHandlerContext ctx, byte frameType, int streamId, Http2Flags flags, ByteBuf payload) throws Http2Exception {
+	}
+
+	@Override
+	public void accept(Void aVoid, Throwable throwable) {
+		if (throwable == null) {
+			if (channel().isActive()) {
+				onOutboundComplete();
+			}
+		}
+		else {
+			onOutboundError(throwable);
+		}
 	}
 }

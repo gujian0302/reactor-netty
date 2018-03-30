@@ -103,11 +103,11 @@ final class Http2ServerHandlerBuilder extends AbstractHttp2ConnectionHandlerBuil
 		}
 
 		@Override
-		public void onPingRead(ChannelHandlerContext ctx, ByteBuf data) throws Http2Exception {
+		public void onPingRead(ChannelHandlerContext ctx, long data) throws Http2Exception {
 		}
 
 		@Override
-		public void onPingAckRead(ChannelHandlerContext ctx, ByteBuf data) throws Http2Exception {
+		public void onPingAckRead(ChannelHandlerContext ctx, long data) throws Http2Exception {
 		}
 
 		@Override

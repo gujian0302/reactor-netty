@@ -54,17 +54,4 @@ public final class Http2ServerHandler extends Http2ConnectionHandler {
 		super.userEventTriggered(ctx, evt);
 		ctx.read();
 	}
-
-	private Http2Headers http1ToHttp2Headers(FullHttpRequest request) {
-		CharSequence host = request.headers()
-		                           .get(HttpHeaderNames.HOST);
-		Http2Headers http2Headers =
-				new DefaultHttp2Headers().method(HttpMethod.GET.asciiName())
-				                         .path(request.uri())
-				                         .scheme(HttpScheme.HTTP.name());
-		if (host != null) {
-			http2Headers.authority(host);
-		}
-		return http2Headers;
-	}
 }
